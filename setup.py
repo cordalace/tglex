@@ -14,7 +14,7 @@ setuptools.setup(
     author_email='cordalace@gmail.com',
     description='Lexical analysis base for telegram bots',
     long_description=LONG_DESCRIPTION,
-    license='Apache License 2.0',
+    license='MIT',
     url='https://github.com/cordalace/tglex',
     packages=setuptools.find_packages(
         exclude=["*.tests", "*.tests.*", "tests.*", "tests"],
