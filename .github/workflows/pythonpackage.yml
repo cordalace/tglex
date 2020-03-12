@@ -31,4 +31,4 @@ jobs:
     - name: Upload coverage
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      run: codecov
+      run: codecov -f coverage.xml -X gcov
