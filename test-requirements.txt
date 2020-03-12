@@ -1,0 +1,12 @@
+bandit==1.6.2
+coverage==5.0.3
+flake8-bugbear==20.1.4
+flake8-commas==2.0.0
+flake8-docstrings==1.5.0
+flake8-import-order==0.18.1
+flake8==3.7.9
+mypy==0.770
+pylint==2.4.4
+pytest-cov==2.8.1
+pytest-mock==2.0.0
+pytest==5.4.0
