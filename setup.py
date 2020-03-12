@@ -9,7 +9,7 @@ with codecs.open('README.md', encoding='utf-8') as readme:
 
 setuptools.setup(
     name='tglex',
-    version="0.1.0",
+    version='0.1.0',
     author='Azat Kurbanov',
     author_email='cordalace@gmail.com',
     description='Lexical analysis base for telegram bots',
