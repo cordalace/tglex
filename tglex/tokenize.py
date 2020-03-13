@@ -1,5 +1,6 @@
 """Tokenize telegram messages."""
 
+import re
 from typing import Generator, Optional, Tuple
 
 from tglex import message
@@ -31,11 +32,26 @@ def split_entity_parts(
         yield msg.text, None
 
 
+def tokenize_usual_text(text: str) -> Generator[token.Token, None, None]:
+    """Tokenize usual text that does not contain special entities."""
+    for token_text in re.findall(r'(\w+|[^\s])', text):
+        if token_text.replace('_', '').replace('-', '').isalnum():
+            yield token.Token(token_text)
+        elif token_text in {',', ':', '-', '–', '—'}:
+            yield token.CommaToken(token_text)
+        elif token_text in {'?'}:
+            yield token.QuestionToken(token_text)
+        elif token_text in {';', '.', '!'}:
+            yield token.DotToken(token_text)
+        else:
+            yield token.DotToken(token_text)
+
+
 def tokenize(msg: message.Message) -> Generator[token.Token, None, None]:
     """Tokenize message."""
     for part_text, entity in split_entity_parts(msg):
         if entity is None:
-            yield from (token.Token(text=x) for x in part_text.split())
+            yield from tokenize_usual_text(part_text)
         elif entity.type == message.MessageEntityType.MENTION:
             yield token.MentionToken(
                 text=part_text,
@@ -43,12 +59,12 @@ def tokenize(msg: message.Message) -> Generator[token.Token, None, None]:
                 user_id=None,
             )
         elif entity.type == message.MessageEntityType.HASHTAG:
-            yield token.HashtagToken(text=part_text)
+            yield token.HashtagToken(part_text)
         elif entity.type == message.MessageEntityType.CASHTAG:
-            yield token.CashtagToken(text=part_text)
+            yield token.CashtagToken(part_text)
         elif entity.type == message.MessageEntityType.BOT_COMMAND:
-            yield token.BotCommandToken(text=part_text)
+            yield token.BotCommandToken(part_text)
         elif entity.type == message.MessageEntityType.URL:
-            yield token.URLToken(text=part_text)
+            yield token.URLToken(part_text)
         elif entity.type == message.MessageEntityType.EMAIL:
-            yield token.EmailToken(text=part_text)
+            yield token.EmailToken(part_text)
