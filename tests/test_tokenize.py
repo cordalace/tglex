@@ -4,6 +4,7 @@ import datetime
 import pytest
 
 import tglex
+from tglex.tokenize import tokenize_usual_text
 
 BASE_MESSAGE = tglex.Message(
     message_id=42,
@@ -25,13 +26,13 @@ BASE_MESSAGE = tglex.Message(
 def test_tokenize():
     msg = dataclasses.replace(BASE_MESSAGE, text='Hello world')
     assert list(tglex.tokenize(msg)) == [
-        tglex.Token(text='Hello'),
-        tglex.Token(text='world'),
+        tglex.Token('Hello'),
+        tglex.Token('world'),
     ]
 
 
 @pytest.mark.parametrize('text,entity_type,expected_token', [
-    ('word', None, tglex.Token(text='word')),
+    ('word', None, tglex.Token('word')),
     (
         '@user',
         tglex.MessageEntityType.MENTION,
@@ -40,27 +41,27 @@ def test_tokenize():
     (
         '#пентон',
         tglex.MessageEntityType.HASHTAG,
-        tglex.HashtagToken(text='#пентон'),
+        tglex.HashtagToken('#пентон'),
     ),
     (
         '$USD',
         tglex.MessageEntityType.CASHTAG,
-        tglex.CashtagToken(text='$USD'),
+        tglex.CashtagToken('$USD'),
     ),
     (
         '/start@jobs_bot',
         tglex.MessageEntityType.BOT_COMMAND,
-        tglex.BotCommandToken(text='/start@jobs_bot'),
+        tglex.BotCommandToken('/start@jobs_bot'),
     ),
     (
         'https://telegram.org',
         tglex.MessageEntityType.URL,
-        tglex.URLToken(text='https://telegram.org'),
+        tglex.URLToken('https://telegram.org'),
     ),
     (
         'user@example.org',
         tglex.MessageEntityType.EMAIL,
-        tglex.EmailToken(text='user@example.org'),
+        tglex.EmailToken('user@example.org'),
     ),
 ])
 def test_single_token(text, entity_type, expected_token):
@@ -88,10 +89,7 @@ def test_unknown_entity_type():
         user=None,
     )]
     msg = dataclasses.replace(BASE_MESSAGE, entities=entities, text=text)
-    assert list(tglex.tokenize(msg)) == [
-        tglex.Token(text='ok'),
-        tglex.Token(text='ok'),
-    ]
+    assert list(tglex.tokenize(msg)) == [tglex.Token('ok'), tglex.Token('ok')]
 
 
 def test_entity_with_text_before():
@@ -107,8 +105,8 @@ def test_entity_with_text_before():
     )]
     msg = dataclasses.replace(BASE_MESSAGE, text=text, entities=entities)
     assert list(tglex.tokenize(msg)) == [
-        tglex.Token(text=usual_text),
-        tglex.EmailToken(text=email_text),
+        tglex.Token(usual_text),
+        tglex.EmailToken(email_text),
     ]
 
 
@@ -125,6 +123,27 @@ def test_entity_with_text_after():
     )]
     msg = dataclasses.replace(BASE_MESSAGE, text=text, entities=entities)
     assert list(tglex.tokenize(msg)) == [
-        tglex.EmailToken(text=email_text),
-        tglex.Token(text=usual_text),
+        tglex.EmailToken(email_text),
+        tglex.Token(usual_text),
     ]
+
+
+@pytest.mark.parametrize('text,expected_tokens', [
+    (
+        'hello world',
+        [tglex.Token('hello'), tglex.Token('world')],
+    ),
+    (
+        'hello, world',
+        [tglex.Token('hello'), tglex.CommaToken(','), tglex.Token('world')],
+    ),
+    (
+        'hello world!',
+        [tglex.Token('hello'), tglex.Token('world'), tglex.DotToken('!')],
+    ),
+    ('hello?', [tglex.Token('hello'), tglex.QuestionToken('?')]),
+    ('hello;', [tglex.Token('hello'), tglex.DotToken(';')]),
+    ('hello\1', [tglex.Token('hello'), tglex.DotToken('\1')]),
+])
+def test_tokenize_usual_text(text, expected_tokens):
+    assert list(tokenize_usual_text(text)) == expected_tokens
