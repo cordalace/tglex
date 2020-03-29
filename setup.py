@@ -9,11 +9,12 @@ with codecs.open('README.md', encoding='utf-8') as readme:
 
 setuptools.setup(
     name='tglex',
-    version='0.2.0',
+    version='0.2.1',
     author='Azat Kurbanov',
     author_email='cordalace@gmail.com',
     description='Lexical analysis base for telegram bots',
     long_description=LONG_DESCRIPTION,
+    long_description_content_type="text/markdown",
     license='MIT',
     url='https://github.com/cordalace/tglex',
     packages=setuptools.find_packages(
